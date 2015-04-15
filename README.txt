@@ -1,0 +1,1 @@
+A viterbi algorithm with fundamental function.  
