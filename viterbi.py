@@ -18,6 +18,7 @@ class Viterbi:
         self.init_prb = []
         
     def load_modle(self, state_set, obs_set, trans, emits, init_prb):
+        print "Loading model..."
         self.state = copy.deepcopy(state_set)
         self.observe = copy.deepcopy(obs_set)
         self.trans = copy.deepcopy(trans)
@@ -26,7 +27,7 @@ class Viterbi:
         self.state_size = len(self.state)
         self.obs_size = len(self.observe)
         
-        print "load model done!"
+        print "Load model finished.Here is the infomation of the model."
         print "state set:"
         print self.state
         print "observe set:"
@@ -38,7 +39,66 @@ class Viterbi:
         print "emits:"
         print self.emits
     
-    def decode(self, obs):
+    def load_file_model(self, filepath):
+        input_data = open(filepath, 'r')
+        print 'Loading model...'
+        if input_data == None:
+            print "Error opening file:",filepath
+        #read state
+        state = input_data.readline().split()
+        self.state_size = len(state)
+        for i in range(self.state_size):
+            self.state[i] = state[i]
+        #read observe state
+        obs = input_data.readline().split()
+        self.obs_size = len(obs)
+        for i in range(self.obs_size):
+            self.observe[i] = obs[i]
+        #read init_prb
+        prb = input_data.readline().split()
+        self.init_prb = [float(p) for p in prb]
+        #read trans_prb
+        self.trans = []
+        for i in range(self.state_size):
+            prb = input_data.readline().split()
+            self.trans.append([float(p) for p in prb])
+        #read emits_prb
+        self.emits = []
+        for i in range(self.state_size):
+            prb = input_data.readline().split()
+            self.emits.append([float(p) for p in prb])
+        input_data.close()
+        
+        print "Load model finished.Here is the infomation of the model."
+        print "state set:"
+        print self.state
+        print "observe set:"
+        print self.observe
+        print "inital prb:"
+        print self.init_prb
+        print "trans:"
+        print self.trans
+        print "emits:"
+        print self.emits
+
+    def decode(self, obs, obs_form = 0):
+        '''
+        decode algorithm.
+        obs_form = 0, the obs is the sequence of observe state's id
+        obs_form = 1, the obs is the sequence of observe state's name
+        '''
+        if obs_form == 1:
+            tmp = []
+            for s in obs:
+                for key in self.observe.keys():
+                    if s == self.observe[key]:
+                        tmp.append(key)
+            obs = tmp
+        else:
+            if obs_form != 0:
+                print "obs sequence error!"
+                return
+        
         obs_len = len(obs)
         prb, prb_max = 0., 0.
         toward = list()
@@ -100,5 +160,9 @@ if __name__ == '__main__':
     prb, path = viterbi.decode([2,0,2])
     print "Max prb:",prb
     print "Path:",path
-#    for item in path:
-#        print state[item],
+    print '-'*60
+    viterbi1 = Viterbi()
+    viterbi1.load_file_model(r'model.mod')
+    prb, path = viterbi1.decode(['Dry','Damp','Soggy'],1)
+    print "Max prb:",prb
+    print "Path:",path
