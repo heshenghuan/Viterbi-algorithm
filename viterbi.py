@@ -16,7 +16,7 @@ class Viterbi:
         self.trans = []
         self.emits = []
         self.init_prb = []
-        
+    
     def load_modle(self, state_set, obs_set, trans, emits, init_prb):
         print "Loading model..."
         self.state = copy.deepcopy(state_set)
@@ -35,9 +35,12 @@ class Viterbi:
         print "inital prb:"
         print self.init_prb
         print "trans:"
-        print self.trans
+        for i in self.trans:
+            print i
         print "emits:"
-        print self.emits
+        for i in self.emits:
+            print i
+        #print self.emits
     
     def load_file_model(self, filepath):
         input_data = open(filepath, 'r')
@@ -77,9 +80,11 @@ class Viterbi:
         print "inital prb:"
         print self.init_prb
         print "trans:"
-        print self.trans
+        for i in self.trans:
+            print i
         print "emits:"
-        print self.emits
+        for i in self.emits:
+            print i
 
     def decode(self, obs, obs_form = 0):
         '''
@@ -138,18 +143,26 @@ class Viterbi:
         
         best_path = []
         best_path.append(state_max)
+        prb_path=[]
+#        prb_path.append(prb_max)
         j = obs_len-1
         while j >= 1:
             pre_state = back[j][best_path[0]]
+            prb_path.insert(0,toward[j][best_path[0]])
             best_path.insert(0, pre_state)
             j -= 1
-        
-        path = self.state[best_path[0]]
-        for p in range(1,len(best_path)):
-            path += '->' + self.state[best_path[p]]
+        prb_path.insert(0,toward[j][best_path[0]])
+        path = "START"
+        for p in range(0,len(best_path)):
+            path += '->' + self.state[best_path[p]] + " " + str(prb_path[p])
         return prb_max, path
         
 if __name__ == '__main__':
+    print "-"*60
+    print "This is a simple example of viterbi algorithm."
+    print "@author: heshenghuan"
+    print "Wed Apr 08 16:34:09 2015"
+    print "-"*60
     viterbi = Viterbi()
     state = {0:"Healthy",1:"Fever"}
     obs_state = {0:"Dizzy",1:"Cold",2:"Normal"}
@@ -157,12 +170,19 @@ if __name__ == '__main__':
     emits = [[0.1, 0.4, 0.5], [0.6, 0.3, 0.1]]
     init_prb = [0.6, 0.4]
     viterbi.load_modle(state, obs_state, trans, emits, init_prb)
-    prb, path = viterbi.decode([2,0,2])
-    print "Max prb:",prb
+    obs=[2,1,0]
+    prb, path = viterbi.decode(obs)
+    print
+    print "-"*60
+    print "Observations:",
+    for digit in obs:
+        print obs_state[digit],
+    print "\nMax prb:",prb
     print "Path:",path
-    print '-'*60
-    viterbi1 = Viterbi()
-    viterbi1.load_file_model(r'model.mod')
-    prb, path = viterbi1.decode(['Dry','Damp','Soggy'],1)
-    print "Max prb:",prb
-    print "Path:",path
+    print "-"*60
+    #print '-'*60
+    #viterbi1 = Viterbi()
+    #viterbi1.load_file_model(r'model.mod')
+    #prb, path = viterbi1.decode(['Dry','Damp','Soggy'],1)
+    #print "Max prb:",prb
+    #print "Path:",path
